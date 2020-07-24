@@ -17,7 +17,7 @@ function makeResponsive() {
         top: 50,
         right: 50,
         bottom: 150,
-        left: 50
+        left: 100
     };
 
     // chart area minus margins
@@ -53,9 +53,10 @@ function makeResponsive() {
 
     // function to update x-axis upon label click
     function renderAxes(newXScale, xLabel) {
+        console.log(newXScale);
         var xAxis = d3.axisBottom(newXScale);
       
-        xLabel.transition()
+        svg.select(".xAxis").transition()
           .duration(1000)
           .call(xAxis);
       
@@ -99,7 +100,12 @@ function makeResponsive() {
         }) 
     console.log(censusData);
         //call xScaleUpdate function
-        var xScale = xScaleUpdate(censusData, currentX);
+        // var xScale = xScaleUpdate(censusData, currentX);
+        var xScale = d3.scaleLinear()
+          .domain([d3.min(censusData, d => d[currentX] - 1),
+            d3.max(censusData, d => d[currentX])
+        ])
+          .range([0, chartWidth]);
 
         var yScale = d3.scaleLinear()
             .domain([d3.min(censusData, d => d[currentY] - 2), d3.max(censusData, d => (d[currentY]))])
@@ -112,7 +118,9 @@ function makeResponsive() {
         // set x to the bottom of the chart
         var xLabel = chartGroup.append("g")
         .attr("transform", `translate(0, ${chartHeight})`)
+        .classed("xAxis", true)
         .call(xAxis);
+        console.log(xAxis);
 
         // set y to the y axis
         chartGroup.append("g")
@@ -174,9 +182,9 @@ function makeResponsive() {
         svg.append('g')
             .attr('class', 'yText');
 
-        chartGroup2 = d3.selectAll().append("text")
+        chartGroup = d3.selectAll(".yText").append("text")
             .attr("transform", "rotate(-90)")
-            .attr("y", 0 - margin.left)
+            .attr("y", margin.left / 2)
             .attr("x", 0 - (chartHeight / 2))
             .attr("dy", "1em")
             .classed("axis-text active", true)
@@ -190,14 +198,24 @@ function makeResponsive() {
             if(dataName !== currentX) {
                 currentX = dataName;
                 
-                console.log(currentX)
+                console.log(censusData, currentX)
 
-                xScale = xScaleUpdate(censusData, currentX)
+                // xScale = xScaleUpdate(censusData, currentX);
+                xScale.domain([d3.min(censusData, d => d[currentX] - 1),
+                  d3.max(censusData, d => d[currentX])
+              ]);
+                
+                console.log(d3.min(censusData, d => d[currentX] - 1));
 
-                xText = renderAxes(xScale, xLabel)
+                // xLabel = renderAxes(xScale, xLabel);
+                // var xAxis = d3.axisBottom(xScale);
+      
+                svg.select(".xAxis").transition()
+                  .duration(100)
+                  .call(xAxis);
                 var cGroup = chartGroup.selectAll('circle')
 
-                chartGroup.selectAll('text').remove()
+                chartGroup.selectAll('.stateText').remove()
 
                 chartGroup.selectAll('text').exit()
                 .data(censusData)   
